@@ -10,45 +10,46 @@ from collections import deque
 
 def rotate_circle(circle, direction, number):
     # rotate 에서 인자가 +: 시계, -: 반시계 방향 회전
-    if direction == 0: direction = 1
-    else: direction = -1
-
-    circle.rotate(direction * number)   # 회전 횟수만큼 돌려버리기 (4번 회전시키면 원상태이므로 % 4 해주기)
+    if direction == 0:
+        circle.rotate(number)
+    else:
+        circle.rotate(-number)
 
 
 def remove_adjacent(circles, n_circles, n_integers):
-    removed = False
-    to_remove = set()
+    removed = False     # 제거된 숫자가 있는지 체크
+    to_remove = set()   # 제거해야 할 숫자들을 set으로 관리
 
+    # 모든 원판 위 모든 숫자들에 대해서 인접 숫자 확인
     for i in range(n_circles):
         for j in range(n_integers):
-            if circles[i][j] == 0:
-                continue
+            if circles[i][j] == 0: continue     # 해당 숫자가 0이면 확인 패스
             current = circles[i][j]
 
             # 같은 원판 내 인접 (좌/우)
             left = (j - 1) % n_integers
             right = (j + 1) % n_integers
-            if circles[i][left] == current:
-                to_remove.add((i, j))
+
+            if circles[i][left] == current:     # 왼쪽에 인접한 숫자와 값이 같다면
+                to_remove.add((i, j))   # 제거할 숫자에 삽입
                 to_remove.add((i, left))
                 removed = True
-            if circles[i][right] == current:
+            if circles[i][right] == current:    # 오른쪽에 인접한 숫자와 값이 같다면
                 to_remove.add((i, j))
                 to_remove.add((i, right))
                 removed = True
 
             # 위/아래 원판 같은 j 인덱스
-            if i > 0 and circles[i - 1][j] == current:
+            if i > 0 and circles[i - 1][j] == current:  # 아래쪽에 인접한 숫자와 값이 같다면
                 to_remove.add((i, j))
                 to_remove.add((i - 1, j))
                 removed = True
-            if i < n_circles - 1 and circles[i + 1][j] == current:
+            if i < n_circles - 1 and circles[i + 1][j] == current:  # 위쪽에 인접한 숫자와 값이 같다면
                 to_remove.add((i, j))
                 to_remove.add((i + 1, j))
                 removed = True
 
-    # 지우기
+    # 인접한 같은 숫자들 제거
     for i, j in to_remove:
         circles[i][j] = 0
 
@@ -74,18 +75,17 @@ for idx in range(len(rotate_info)):     # 원판 회전
 
     if not is_removed:    # 제거한 숫자가 없다면
         total_sum = sum(sum(circle) for circle in circles)
-        non_zero_count = sum(num != 0 for circle in circles for num in circle)
+        non_zero_count = sum(num != 0 for circle in circles for num in circle)  # 0이 아닌 숫자들의 개수
 
-        if non_zero_count > 0:
+        if non_zero_count > 0:  # 0이 아닌 숫자가 있다면 평균 계산해서 업데이트
             avg_val = total_sum / non_zero_count
-            for i in range(number_of_circles):
-                for j in range(number_of_integers):
+            for i in range(number_of_circles):  # 모든 원판에 대해서
+                for j in range(number_of_integers): # 원판 내 숫자들에 대해서
                     if circles[i][j] != 0:
-                        if circles[i][j] > avg_val:
-                            circles[i][j] -= 1
-                        elif circles[i][j] < avg_val:
-                            circles[i][j] += 1
+                        if circles[i][j] > avg_val: # 평균보다 크면
+                            circles[i][j] -= 1      # 1 빼기
+                        elif circles[i][j] < avg_val:   # 평균보다 작으면
+                            circles[i][j] += 1          # 1 더하기
 
-    print(circles)
 circle_sum = sum(sum(circle) for circle in circles)
 print(circle_sum)
