@@ -17,21 +17,27 @@ dr = [-1, 1, 0, 0]
 dc = [0, 0, -1, 1]
 
 
-def play_pinball(start_r, start_c, dr, dc): # 핀볼 시작
+def play_pinball(start_r, start_c, d): # 핀볼 시작
+    # 블랙홀이 없으면..
+    # if not any(-1 in row for row in pinball_board): return -1
+
     # 현재 위치와 방향
     nr, nc = start_r, start_c
-    cur_dr, cur_dc = dr, dc
 
     score = 0
+    visited = set()
 
     while True:
         # 현재 진행 방향으로 진행 시 다음 위치
-        next_r = nr + cur_dr
-        next_c = nc + cur_dc
+        next_r = nr + dr[d]
+        next_c = nc + dc[d]
 
         # 벽에 부딪히는 경우
         if next_r < 0 or next_r >= N or next_c < 0 or next_c >= N:
-            cur_dr, cur_dc = -cur_dr, -cur_dc  # 진행 방향 반대로
+            if next_r < 0 or next_r >= N:  # 위/아래 벽에 부딪힘
+                d = 1 - d  # 0 ↔ 1 반전
+            elif next_c < 0 or next_c >= N:  # 좌/우 벽에 부딪힘
+                d = 5 - d  # 2 ↔ 3 반전
             score += 1
             continue
 
@@ -48,54 +54,70 @@ def play_pinball(start_r, start_c, dr, dc): # 핀볼 시작
         # 빈 공간이면 계속 진행
         if next_pos_info == 0: continue
 
-        # 사각형 블록에 부딪히면
-        if next_pos_info == 5:
-            cur_dr, cur_dc = -cur_dr, -cur_dc  # 진행 방향 반대로
+        # 블록 처리
+        if 1 <= next_pos_info <= 5:
             score += 1
 
-        # 삼각형 블록에 부딪히면
-        elif next_pos_info == 1:  # 좌하 삼각형 블록
-            score += 1
-            if cur_dr == -1 or cur_dc == 1:  # 아래에서 올라오거나 왼쪽에서 오른쪽으로
-                cur_dr, cur_dc = -cur_dr, -cur_dc  # 진행 방향 반대로
-            else:  # 위에서 내려오거나 오른쪽에서 왼쪽으로
-                cur_dr, cur_dc = cur_dc, cur_dr  # 진행 방향 꺾기
-
-        elif next_pos_info == 2:  # 좌상 삼각형 블록
-            score += 1
-            if cur_dr == 1 or cur_dc == 1:  # 위에서 내려오거나 왼쪽에서 오른쪽으로
-                cur_dr, cur_dc = -cur_dr, -cur_dc  # 진행 방향 반대로
-            else:  # 아래에서 올라오거나 오른쪽에서 왼쪽으로
-                cur_dr, cur_dc = -cur_dc, -cur_dr  # 진행 방향 꺾기
-
-        elif next_pos_info == 3:  # 우상 삼각형 블록
-            score += 1
-            if cur_dr == 1 or cur_dc == -1:  # 위에서 내려오거나 오른쪽에서 왼쪽으로
-                cur_dr, cur_dc = -cur_dr, -cur_dc  # 진행 방향 반대로
-            else:  # 아래에서 올라오거나 왼쪽에서 오른쪽으로
-                cur_dr, cur_dc = cur_dc, cur_dr  # 진행 방향 꺾기
-
-        elif next_pos_info == 4:  # 우하 삼각형 블록
-            score += 1
-            if cur_dr == -1 or cur_dc == -1:  # 아래에서 올라오거나 오른쪽에서 왼쪽으로
-                cur_dr, cur_dc = -cur_dr, -cur_dc  # 진행 방향 반대로
-            else:  # 위에서 내려오거나 왼쪽에서 오른쪽으로
-                cur_dr, cur_dc = -cur_dc, -cur_dr  # 진행 방향 꺾기
+            if next_pos_info == 1:
+                if d == 0:
+                    d = 1
+                elif d == 1:
+                    d = 3
+                elif d == 2:
+                    d = 0
+                elif d == 3:
+                    d = 2
+            elif next_pos_info == 2:
+                if d == 0:
+                    d = 3
+                elif d == 1:
+                    d = 0
+                elif d == 2:
+                    d = 1
+                elif d == 3:
+                    d = 2
+            elif next_pos_info == 3:
+                if d == 0:
+                    d = 2
+                elif d == 1:
+                    d = 0
+                elif d == 2:
+                    d = 3
+                elif d == 3:
+                    d = 1
+            elif next_pos_info == 4:
+                if d == 0:
+                    d = 1
+                elif d == 1:
+                    d = 2
+                elif d == 2:
+                    d = 3
+                elif d == 3:
+                    d = 0
+            elif next_pos_info == 5:
+                if d == 0 or d == 1:
+                    d = 1 - d
+                else:
+                    d = 5 - d
 
         # 웜홀에 빠졌다면
-        else:
-            pair_num = next_pos_info
+        elif 6 <= next_pos_info <= 10:
             # 같은 번호의 다른 웜홀 찾기
-            found = False   # 찾았다는 표시
             for i in range(N):
-                if found: break # 찾았으면 그만
-
                 for j in range(N):
                     # 현재 위치가 아닌 다른 웜홀 찾았다면
-                    if (i, j) != (nr, nc) and pinball_board[i][j] == pair_num:
-                        nr, nc = i, j   # 해당 위치로 이동
-                        found = True    # 찾음
+                    if (i, j) != (nr, nc) and pinball_board[i][j] == next_pos_info:
+                        nr, nc = i, j  # 해당 위치로 이동
                         break
+                else:
+                    continue
+                break
+
+        state = (nr, nc, d)
+        if state in visited: return score
+        visited.add(state)
+
+    return score
 
 
 import sys
@@ -107,96 +129,11 @@ for tc in range(1, T + 1):
     pinball_board = [list(map(int, input().split())) for _ in range(N)]     # 게임판 정보
 
     max_score = 0   # 얻을 수 있는 최대 점수 저장
+
     for r in range(N):
         for c in range(N):
             if pinball_board[r][c] == 0: # 빈공간에서 시작
                 for i in range(4):  # 모든 방향으로 진행
-                    max_score = max(max_score, play_pinball(r, c, dr[i], dc[i]))
+                    max_score = max(max_score, play_pinball(r, c, i))
 
     print(f'#{tc} {max_score}')
-
-
-
-
-
-
-
-# # 방향: 상(0) 하(1) 좌(2) 우(3)
-# dr = [-1, 1, 0, 0]
-# dc = [0, 0, -1, 1]
-#
-# # 블록 반사 규칙 (block_type: 1~5, direction: 0~3)
-# # reflect[block][dir] = new_dir
-# reflect = {
-#     1: [1, 3, 0, 2],  # 좌하
-#     2: [3, 0, 1, 2],  # 좌상
-#     3: [2, 0, 3, 1],  # 우상
-#     4: [1, 2, 3, 0],  # 우하
-#     5: [1, 0, 3, 2],  # 사각형 (반대방향)
-# }
-#
-#
-# def play_pinball(start_r, start_c, d):
-#     r, c = start_r, start_c
-#     score = 0
-#
-#     while True:
-#         r += dr[d]
-#         c += dc[d]
-#
-#         # 벽에 부딪힘
-#         if r < 0 or r >= N or c < 0 or c >= N:
-#             d = (d ^ 1)  # 반대 방향
-#             score += 1
-#             continue
-#
-#         cell = board[r][c]
-#
-#         # 종료 조건
-#         if (r, c) == (start_r, start_c) or cell == -1:
-#             return score
-#
-#         # 빈 칸
-#         if cell == 0:
-#             continue
-#
-#         # 블록 (1~5)
-#         if 1 <= cell <= 5:
-#             d = reflect[cell][d]
-#             score += 1
-#             continue
-#
-#         # 웜홀 (6~10)
-#         if 6 <= cell <= 10:
-#             r, c = wormholes[(cell, (r, c))]
-#             continue
-#
-#
-# # 입력 처리
-# T = int(input())
-# for tc in range(1, T + 1):
-#     N = int(input())
-#     board = [list(map(int, input().split())) for _ in range(N)]
-#
-#     # 웜홀 좌표 저장
-#     worm_dict = {}
-#     for i in range(N):
-#         for j in range(N):
-#             if 6 <= board[i][j] <= 10:
-#                 worm_dict.setdefault(board[i][j], []).append((i, j))
-#
-#     # 웜홀 매핑 딕셔너리 (양방향)
-#     wormholes = {}
-#     for num, coords in worm_dict.items():
-#         a, b = coords
-#         wormholes[(num, a)] = b
-#         wormholes[(num, b)] = a
-#
-#     max_score = 0
-#     for i in range(N):
-#         for j in range(N):
-#             if board[i][j] == 0:  # 빈칸에서만 시작
-#                 for d in range(4):  # 상하좌우
-#                     max_score = max(max_score, play_pinball(i, j, d))
-#
-#     print(f'#{tc} {max_score}')
