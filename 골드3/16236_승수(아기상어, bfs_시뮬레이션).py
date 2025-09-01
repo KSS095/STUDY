@@ -24,6 +24,7 @@ def find_fish(row, col, size):
             can_eat_fish.append((d, r, c))  # 후보군에 추가
 
         # 후보군에 존재하는 최단거리보다 긴 거리에 있는 물고기를 찾았다면 종료
+        # 일종의 가지치기?
         if can_eat_fish and can_eat_fish[0][0] < d: break
 
         for i in range(4):
@@ -72,7 +73,7 @@ while True:
     # (가까운 물고기 까지의 거리, 물고기의 행, 열)
     dist, fish_row, fish_col = closest_fish
 
-    time += dist    # 거리만큼 시간 증가
+    time += dist    # 이동한 거리만큼 시간 증가
     eat_count += 1  # 물고기 먹어버리기
 
     shark_row, shark_col = fish_row, fish_col   # 상어 위치를 물고기 위치로 갱신
