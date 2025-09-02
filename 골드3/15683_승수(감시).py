@@ -6,7 +6,7 @@ dc = [0, 1, 0, -1]
 
 # cctv 종류마다 감시 가능한 방향
 possible_monitor = {
-    1: [[0], [1], [2], [3]],    # 하 방향
+    1: [[0], [1], [2], [3]],    # 한 방향
     2: [[0, 2], [1, 3]],    # 수직 방향
     3: [[0, 1], [1, 2], [2, 3], [3, 0]],    # 직각 방향
     4: [[0, 1, 2], [1, 2, 3], [2, 3, 0], [3, 0, 1]],    # 세 방향
@@ -26,6 +26,11 @@ def cctv(acc_cctv, copy_of_office):
                 if copy_of_office[i][j] == 0:   # 0이라면 사각지대
                     count_zero += 1     # 사각지대 개수 추가
         min_blind_spot = min(min_blind_spot, count_zero)    # 최솟값 갱신
+
+        for row in copy_of_office:
+            print(row)
+        print()
+
         return
 
     r, c, cctv_type = cctv_info[acc_cctv]
@@ -44,7 +49,7 @@ def cctv(acc_cctv, copy_of_office):
             while 0 <= nr < N and 0 <= nc < M:
                 if new_office[nr][nc] == 6: break   # 벽이면 중단
                 if new_office[nr][nc] == 0:     # 빈 공간이라면
-                    new_office[nr][nc] = '#'    # 감시 가능하다는 표시
+                    new_office[nr][nc] = -1    # 감시 가능하다는 표시
                 # 이동 중인 방향으로 계속 이동
                 nr += dr[direction]
                 nc += dc[direction]
